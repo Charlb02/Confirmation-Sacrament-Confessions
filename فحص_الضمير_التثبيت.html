@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="app">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>فحص الضمير — التثبيت</title>
+<style>
+:root{--p:#6C3483;--pl:#9B59B6;--g:#1A7A4A;--gl:#27AE60;--a:#B7950B;--al:#F4D03F;--bg:#F9F6FF;--tx:#2C1254;--txl:#7F8C8D;--sh:0 4px 16px rgba(108,52,131,.12);--r:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--tx);max-width:620px;margin:0 auto;padding:14px;}
+
+/* ── ROLE PICKER SCREEN ── */
+#scr-role{min-height:90vh;display:flex;flex-direction:column;justify-content:center;}
+.role-hdr{background:linear-gradient(135deg,#6C3483,#4A235A);border-radius:16px;padding:22px 16px 18px;margin-bottom:24px;color:#fff;text-align:center;}
+.role-hdr h1{font-size:24px;margin-bottom:6px;}
+.role-hdr p{font-size:14px;opacity:.85;line-height:1.5;}
+.role-lang-row{display:flex;justify-content:center;gap:8px;margin-bottom:14px;}
+.role-cards{display:flex;gap:14px;}
+.role-card{flex:1;background:#fff;border:3px solid #D7BDE2;border-radius:18px;padding:24px 12px 20px;cursor:pointer;text-align:center;transition:all .2s;box-shadow:var(--sh);}
+.role-card:hover,.role-card:active{border-color:var(--p);background:#F4ECF7;transform:scale(.98);}
+.role-card .r-icon{font-size:52px;margin-bottom:10px;}
+.role-card .r-name-ar{font-size:20px;font-weight:800;color:var(--p);margin-bottom:4px;}
+.role-card .r-name-en{font-size:13px;color:var(--txl);font-weight:600;}
+.role-card .r-desc{font-size:13px;color:var(--txl);line-height:1.5;margin-top:8px;}
+
+/* ── SHARED ── */
+.hdr{background:linear-gradient(135deg,#6C3483,#4A235A);border-radius:16px;padding:18px 16px 14px;margin-bottom:16px;color:#fff;text-align:center;position:relative;}
+.hdr h1{font-size:22px;margin-bottom:5px;}
+.hdr p{font-size:14px;opacity:.85;line-height:1.5;}
+.lang-row{display:flex;justify-content:center;gap:8px;margin-bottom:12px;}
+.lang-btn{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:99px;padding:5px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;}
+.lang-btn.act{background:#fff;color:var(--p);border-color:#fff;}
+.role-badge{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:99px;padding:4px 14px;font-size:12px;font-weight:700;margin-bottom:8px;cursor:pointer;}
+.role-badge:hover{background:rgba(255,255,255,.3);}
+.intro{background:#FDF9FF;border:2px solid #D7BDE2;border-radius:var(--r);padding:14px 16px;margin-bottom:14px;font-size:14px;line-height:1.8;color:#4A235A;}
+.intro strong{color:var(--p);display:block;margin-bottom:6px;font-size:15px;}
+.intro ol{padding-right:18px;padding-left:18px;}
+.intro li{margin-bottom:3px;}
+.counter{text-align:center;padding:10px 14px;font-size:14px;font-weight:700;color:var(--p);background:#EDE0F5;border-radius:10px;margin-bottom:14px;}
+.section{margin-bottom:14px;border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.sec-title{display:flex;align-items:center;gap:8px;background:var(--p);color:#fff;padding:11px 14px;font-size:15px;font-weight:700;}
+.questions{background:#fff;border:2px solid #E8D5F0;border-top:none;border-radius:0 0 var(--r) var(--r);}
+.q-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-bottom:1px solid #F4ECF7;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent;}
+.q-item:last-child{border-bottom:none;}
+.q-item:active{background:#F9F0FF;}
+.q-check{width:24px;height:24px;border:2px solid #C9A0DC;border-radius:7px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:15px;}
+.q-item.done .q-check{background:var(--p);border-color:var(--p);color:#fff;}
+.q-text{font-size:15px;line-height:1.6;flex:1;}
+.q-item.done .q-text{color:#aaa;text-decoration:line-through;}
+.view-btn{display:block;width:100%;padding:15px;background:linear-gradient(135deg,var(--g),var(--gl));color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;box-shadow:0 4px 16px rgba(26,122,74,.25);}
+.view-btn:active{opacity:.9;}
+.reset-btn{display:block;width:100%;padding:12px;background:#EDE0F5;color:var(--p);border:2px solid #D7BDE2;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:18px;}
+
+/* ── SUMMARY ── */
+#scr-sum{display:none;}
+.sum-hdr{background:linear-gradient(135deg,var(--g),#0E5E33);border-radius:16px;padding:18px 16px 14px;margin-bottom:16px;color:#fff;text-align:center;}
+.sum-hdr h1{font-size:22px;margin-bottom:5px;}
+.sum-hdr p{font-size:14px;opacity:.85;}
+.sum-meta{background:#E9F7EF;border:2px solid #A9DFBF;border-radius:var(--r);padding:12px 16px;margin-bottom:14px;text-align:center;font-size:15px;font-weight:700;color:#1A5C35;}
+.sum-empty{background:#fff;border-radius:var(--r);padding:24px;text-align:center;font-size:15px;color:var(--txl);box-shadow:var(--sh);}
+.sum-cat{background:#fff;border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);}
+.sum-cat-title{background:var(--p);color:#fff;padding:10px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:7px;}
+.sum-item{padding:10px 14px;font-size:15px;line-height:1.6;border-bottom:1px solid #F4ECF7;color:var(--tx);}
+.sum-item:last-child{border-bottom:none;}
+.sum-item::before{content:"• ";color:var(--p);font-weight:700;}
+.steps-box{background:#fff;border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--sh);}
+.steps-box h3{font-size:16px;color:var(--p);margin-bottom:14px;display:flex;align-items:center;gap:7px;}
+.step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F4ECF7;}
+.step:last-child{border-bottom:none;}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--p);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.step-body{flex:1;}
+.step-title{font-size:15px;font-weight:700;color:var(--p);margin-bottom:2px;}
+.step-desc{font-size:14px;color:var(--tx);line-height:1.6;}
+.prayer-box{background:linear-gradient(135deg,#EDE0F5,#D7BDE2);border-radius:var(--r);padding:16px;margin-bottom:14px;}
+.prayer-box h3{font-size:16px;color:var(--p);margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+.prayer-note{font-size:13px;color:#7D3C98;margin-bottom:12px;}
+.prayer-text{font-size:15px;line-height:2.1;color:#4A235A;font-style:italic;font-weight:600;}
+.sum-actions{display:flex;gap:10px;margin-bottom:20px;}
+.back-btn{flex:1;padding:12px;background:#EDE0F5;color:var(--p);border:2px solid #D7BDE2;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.print-btn{flex:1;padding:12px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.footer{text-align:center;font-size:12px;color:#aaa;padding:8px;}
+[dir=ltr] .intro ol{padding-left:18px;padding-right:0;}
+@media print{
+  .lang-row,.role-lang-row,.view-btn,.reset-btn,.back-btn,.print-btn,.counter,.role-badge{display:none!important;}
+  body{background:#fff;padding:0;}
+  .hdr,.sum-hdr,.sec-title,.sum-cat-title,.prayer-box{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  #scr-exam{display:none!important;}#scr-sum{display:block!important;}#scr-role{display:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SCREEN 0: ROLE PICKER
+══════════════════════════════════════ -->
+<div id="scr-role">
+  <div class="role-hdr">
+    <div class="role-lang-row">
+      <button class="lang-btn act" id="rl-btn-ar">العربية</button>
+      <button class="lang-btn"     id="rl-btn-en">English</button>
+    </div>
+    <h1>🔍 <span id="rl-title">فحص الضمير — التثبيت</span></h1>
+    <p id="rl-subtitle">اجلس بهدوء واطلب من الروح القدس أن ينير ضميرك — ثم اختر من أنت</p>
+  </div>
+  <div class="role-cards">
+    <div class="role-card" id="card-student">
+      <div class="r-icon">🙋</div>
+      <div class="r-name-ar" id="rc-s-ar">طالب تثبيت</div>
+      <div class="r-name-en" id="rc-s-en">Confirmation Student</div>
+      <div class="r-desc" id="rc-s-desc">أستعدّ لسرّ التثبيت وأريد فحص ضميري قبل الاعتراف</div>
+    </div>
+    <div class="role-card" id="card-godfather">
+      <div class="r-icon">🤝</div>
+      <div class="r-name-ar" id="rc-g-ar">أشابين</div>
+      <div class="r-name-en" id="rc-g-en">Godparent</div>
+      <div class="r-desc" id="rc-g-desc">أرافق طالباً في التثبيت وأستعدّ أيضاً للاعتراف</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 1: EXAM
+══════════════════════════════════════ -->
+<div id="scr-exam" style="display:none;">
+<div class="hdr">
+  <div class="lang-row">
+    <button class="lang-btn act" id="btn-ar">العربية</button>
+    <button class="lang-btn"     id="btn-en">English</button>
+  </div>
+  <div class="role-badge" id="role-badge-btn">🙋 طالب تثبيت — تغيير ↩</div>
+  <h1>🔍 <span id="t-title"></span></h1>
+  <p id="t-subtitle"></p>
+</div>
+<div class="intro" id="intro-box">
+  <strong id="t-howTitle"></strong>
+  <ol>
+    <li id="t-how1"></li><li id="t-how2"></li>
+    <li id="t-how3"></li><li id="t-how4"></li>
+  </ol>
+</div>
+<div class="counter" id="counter"></div>
+<div id="cats-container"></div>
+<button class="view-btn"   id="btn-viewSum"></button>
+<button class="reset-btn"  id="btn-reset"></button>
+<div class="footer" id="t-footer"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2: SUMMARY
+══════════════════════════════════════ -->
+<div id="scr-sum">
+<div class="sum-hdr">
+  <div class="lang-row">
+    <button class="lang-btn act" id="sbtn-ar">العربية</button>
+    <button class="lang-btn"     id="sbtn-en">English</button>
+  </div>
+  <h1>📋 <span id="t-sumTitle"></span></h1>
+  <p id="t-sumSubtitle"></p>
+</div>
+<div class="sum-meta" id="sum-meta"></div>
+<div id="summary-sins"></div>
+<div class="steps-box">
+  <h3>🚶 <span id="t-stepsTitle"></span></h3>
+  <div id="steps-container"></div>
+</div>
+<div class="prayer-box">
+  <h3>🙏 <span id="t-prayTitle"></span></h3>
+  <p class="prayer-note" id="t-prayNote"></p>
+  <p class="prayer-text" id="prayer-text"></p>
+</div>
+<div class="sum-actions">
+  <button class="back-btn"  id="btn-backExam"></button>
+  <button class="print-btn" id="btn-print"></button>
+</div>
+<div class="footer" id="t-footer2"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// UI TRANSLATIONS
+// ═══════════════════════════════════════════════════════
+const T = {
+  ar:{
+    // Role picker
+    rl_title:'فحص الضمير — التثبيت',
+    rl_subtitle:'اجلس بهدوء واطلب من الروح القدس أن ينير ضميرك — ثم اختر من أنت',
+    rc_s_ar:'طالب تثبيت', rc_s_en:'Confirmation Student',
+    rc_s_desc:'أستعدّ لسرّ التثبيت وأريد فحص ضميري قبل الاعتراف',
+    rc_g_ar:'أشابين', rc_g_en:'Godparent',
+    rc_g_desc:'أرافق طالباً في التثبيت وأستعدّ أيضاً للاعتراف',
+    // Exam header
+    title_student:'فحص الضمير — طالب التثبيت',
+    title_god:'فحص الضمير — الإشبين / الشاهد',
+    subtitle_student:'اقرأ كل سؤال بصدق أمام الله وعلّم على ما تحتاج الاعتراف به',
+    subtitle_god:'اقرأ كل سؤال بهدوء أمام الله، بصدق وتواضع، وعلّم على ما تحتاج الاعتراف به',
+    badge_student:'🙋 طالب تثبيت — تغيير ↩',
+    badge_god:'🤝 أشابين — تغيير ↩',
+    howTitle:'💡 كيف تستخدم هذا الفحص؟',
+    how1:'اقرأ كل سؤال بهدوء وأنت تفكّر أمام الله',
+    how2:'اضغط على السؤال إذا كنت أخطأتَ فيه ليُعلَّم بـ ✓',
+    how3:'بعد الانتهاء، اضغط "عرض قائمتي" للحصول على قائمة مرتّبة',
+    how4:'احمل القائمة معك إلى الاعتراف كمرجع',
+    viewBtn:'📋 عرض قائمتي للاعتراف',
+    resetBtn:'🔄 مسح كل العلامات',
+    footer:'تطبيق التثبيت — إعداد للأسرار المقدسة',
+    // Summary
+    sumTitle:'قائمة اعترافي',
+    sumSubtitle:'هذه هي الأشياء التي تحتاج الاعتراف بها',
+    backBtn:'← العودة لفحص الضمير',
+    printBtn:'🖨️ طباعة القائمة',
+    noSins:'لم تختر أيّ شيء بعد. ارجع وأكمل فحص ضميرك أولاً.',
+    metaSingle:'اخترتَ خطيئة واحدة للاعتراف بها',
+    metaMany:(n)=>`اخترتَ ${n} خطيئة للاعتراف بها`,
+    stepsTitle:'خطوات الاعتراف — خطوة بخطوة',
+    prayTitle:'فعل الندامة',
+    prayNote:'قلها بصدق وبقلب حقيقي بعد ذكر خطاياك للكاهن',
+  },
+  en:{
+    rl_title:'Examination of Conscience — Confirmation',
+    rl_subtitle:'Sit quietly, ask the Holy Spirit to enlighten your conscience — then choose your role',
+    rc_s_ar:'طالب تثبيت', rc_s_en:'Confirmation Student',
+    rc_s_desc:'I am preparing for the Sacrament of Confirmation and want to examine my conscience before Confession',
+    rc_g_ar:'أشابين', rc_g_en:'Godparent',
+    rc_g_desc:'I am accompanying a Confirmation candidate and preparing for Confession myself',
+    title_student:'Examination of Conscience — Confirmation Student',
+    title_god:'Examination of Conscience — Godparent',
+    subtitle_student:'Read each question honestly before God and mark what you need to confess',
+    subtitle_god:'Read each question calmly before God, honestly and humbly, and mark what you need to confess',
+    badge_student:'🙋 Confirmation Student — Change ↩',
+    badge_god:'🤝 Godparent — Change ↩',
+    howTitle:'💡 How to use this examination?',
+    how1:'Read each question slowly while thinking before God',
+    how2:'Tap a question if you committed that sin to mark it ✓',
+    how3:'When done, press "View My List" for an organised list',
+    how4:'Bring the list with you to confession as a reference',
+    viewBtn:'📋 View My Confession List',
+    resetBtn:'🔄 Clear All Marks',
+    footer:'Confirmation App — Preparation for the Sacraments',
+    sumTitle:'My Confession List',
+    sumSubtitle:'These are the things you need to confess',
+    backBtn:'← Back to Examination',
+    printBtn:'🖨️ Print List',
+    noSins:"You haven't selected anything yet. Go back and complete your examination first.",
+    metaSingle:'You selected 1 sin to confess',
+    metaMany:(n)=>`You selected ${n} sins to confess`,
+    stepsTitle:'Steps for Confession — Step by Step',
+    prayTitle:'Act of Contrition',
+    prayNote:'Say this sincerely and from your heart after telling the priest your sins',
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// QUESTIONS — STUDENTS (youth, adapted from existing app)
+// ═══════════════════════════════════════════════════════
+const CATS_STUDENT = [
+  {
+    icon:'🙏', ar:'نحو الله', en:'Toward God',
+    qs:[
+      {ar:'هل ذهبتُ إلى القداس كل أحد وفي الأعياد الدينية؟',en:'Did I go to Mass every Sunday and on holy days?'},
+      {ar:'هل شاركتُ في القداس بتركيز وانتباه، أم شرد ذهني وفكري؟',en:'Did I participate in Mass attentively, or did I daydream and get distracted?'},
+      {ar:'هل صلّيتُ كل يوم؟',en:'Did I pray every day?'},
+      {ar:'هل تمرّدتُ على الله وعصيتُ وصاياه؟',en:'Did I rebel against God and disobey His commandments?'},
+      {ar:'هل أسأتُ استخدام اسم الله بالحلف الكاذب أو الكلام البذيء؟',en:"Did I misuse God's name through false oaths or offensive language?"},
+      {ar:'هل شكرتُ يسوع لأنّه تجسّد ومات وقام من أجل خلاصي؟',en:'Did I thank Jesus for becoming man, dying and rising for my salvation?'},
+      {ar:'هل طلبتُ من الروح القدس مساعدتي على التغلّب على الخطيئة والتجربة؟',en:'Did I ask the Holy Spirit to help me overcome sin and temptation?'},
+    ]
+  },
+  {
+    icon:'👨‍👩‍👦', ar:'نحو الوالدين والكبار', en:'Toward Parents & Elders',
+    qs:[
+      {ar:'هل أطعتُ والديّ واحترمتهما وأجبتُ على طلباتهما بسرور؟',en:'Did I obey and respect my parents and respond to their requests willingly?'},
+      {ar:'هل أطعتُ معلّميّ واحترمتُ مَن هم في سلطة عليّ؟',en:'Did I obey my teachers and respect those in authority over me?'},
+      {ar:'هل ساعدتُ في أعمال البيت دون انتظار أن يُطلب منّي؟',en:'Did I help with household tasks without waiting to be asked?'},
+      {ar:'هل كنتُ متكبّراً وعنيداً في تعاملي مع الآخرين؟',en:'Was I arrogant or stubborn in my dealings with others?'},
+    ]
+  },
+  {
+    icon:'📚', ar:'نحو دراستي ومسؤولياتي', en:'Toward My Studies & Responsibilities',
+    qs:[
+      {ar:'هل أهملتُ واجباتي المدرسية أو مسؤولياتي في البيت؟',en:'Did I neglect my schoolwork or responsibilities at home?'},
+      {ar:'هل غششتُ في الامتحانات أو نقلتُ من زميلي دون إذنه؟',en:'Did I cheat on exams or copy from a classmate without permission?'},
+      {ar:'هل أضعتُ وقتي بإفراط على الهاتف والإنترنت والألعاب؟',en:'Did I waste excessive time on my phone, internet, or video games?'},
+      {ar:'هل نمتُ في وقت مناسب أم بقيتُ ساهراً دون سبب وجيه؟',en:'Did I sleep at a reasonable hour or stay up late without good reason?'},
+    ]
+  },
+  {
+    icon:'🤝', ar:'نحو الآخرين', en:'Toward Others',
+    qs:[
+      {ar:'هل كذبتُ على والديّ أو على أي شخص؟',en:'Did I lie to my parents or to anyone?'},
+      {ar:'هل اغتبتُ أحداً أو تكلّمتُ عنه بالسوء من وراء ظهره؟',en:'Did I gossip or speak badly about someone behind their back?'},
+      {ar:'هل افتريتُ على أحد أو قلتُ عنه كلاماً كاذباً؟',en:'Did I slander anyone or say false things about them?'},
+      {ar:'هل استهزأتُ بأحد أو أهنتُه بكلماتي؟',en:'Did I mock or insult anyone with my words?'},
+      {ar:'هل سرقتُ شيئاً؟ وإن فعلتُ، هل أعدتُه؟',en:'Did I steal anything? If so, did I return it?'},
+      {ar:'هل طلبتُ المسامحة ممّن أسأتُ إليه؟',en:'Did I ask forgiveness from those I wronged?'},
+      {ar:'هل سامحتُ مَن أساء إليّ من قلبي؟',en:'Did I sincerely forgive those who wronged me?'},
+      {ar:'هل آذيتُ أحداً جسدياً أو رفضتُه وأقصيتُه؟',en:'Did I physically hurt anyone, or exclude and reject them?'},
+      {ar:'هل انجرفتُ خلف أصدقاء سيّئين وفعلتُ ما يفعلونه؟',en:'Did I follow bad friends and imitate their behavior?'},
+    ]
+  },
+  {
+    icon:'💝', ar:'نحو الطهارة', en:'Toward Purity',
+    qs:[
+      {ar:'هل انشغل فكري بأخيلة أو صور غير نظيفة ولم أسعَ إلى طردها؟',en:'Did I dwell on impure thoughts or images instead of trying to dismiss them?'},
+      {ar:'هل نظرتُ إلى أشخاص بنظرة شهوانية وغير لائقة؟',en:'Did I look at people with lustful or impure eyes?'},
+      {ar:'هل شاهدتُ صوراً أو مقاطع إباحية أو محتوى جنسياً على الإنترنت؟',en:'Did I view pornographic images, videos, or sexual content online?'},
+      {ar:'هل تصرّفتُ بطريقة غير لائقة مع جسدي؟',en:'Did I act improperly with my own body?'},
+      {ar:'هل لمستُ أحداً أو سمحتُ لأحد بلمسي بطريقة غير لائقة؟',en:'Did I touch someone or allow someone to touch me in an improper way?'},
+      {ar:'هل راسلتُ أحداً عبر الهاتف أو الإنترنت بطريقة غير نظيفة؟',en:'Did I message anyone via phone or internet in an impure way?'},
+    ]
+  },
+  {
+    icon:'🤔', ar:'نحو قلبي وأفكاري', en:'Toward My Heart & Thoughts',
+    qs:[
+      {ar:'هل حسدتُ أحداً على مظهره أو ممتلكاته أو نجاحه؟',en:'Did I envy anyone for their appearance, possessions, or success?'},
+      {ar:'هل غضبتُ وحملتُ ضغينة أو حقداً في قلبي؟',en:'Did I get angry and hold resentment or a grudge in my heart?'},
+      {ar:'هل كرهتُ أحداً أو تمنّيتُ له السوء في قلبي؟',en:'Did I hate anyone or wish them harm in my heart?'},
+      {ar:'هل كنتُ كثير الشكوى والتذمّر وعدم الرضى؟',en:'Was I constantly complaining, grumbling, and ungrateful?'},
+      {ar:'هل تكبّرتُ واعتقدتُ أنّي أفضل من الآخرين؟',en:'Was I proud and thought I was better than others?'},
+      {ar:'هل اشتغلتُ بالتنجيم أو قراءة الطالع أو الأشياء التي تشبهها؟',en:'Did I engage in astrology, horoscopes, fortune-telling, or similar practices?'},
+      {ar:'هل أهملتُ فعل الخير حين أمرني به ضميري؟',en:'Did I neglect to do good when my conscience urged me to?'},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════
+// QUESTIONS — GODFATHERS (adults, from screenshots)
+// ═══════════════════════════════════════════════════════
+const CATS_GOD = [
+  {
+    icon:'🙏', ar:'في علاقتي بالله', en:'In My Relationship with God',
+    qs:[
+      {ar:'هل واظبتُ على حضور القداس كل أحد وفي أعياد الواجب؟',en:'Have I faithfully attended Mass on Sundays and on Holy Days of Obligation?'},
+      {ar:'هل حرصتُ على أن أعيش يوم الربّ (الأحد) بروح مميّزة: راحةً وفرحاً وابتعاداً عن العمل غير الضروري؟',en:"Have I made a decent effort to live the Lord's Day (Sunday) with special attention, resting and rejoicing, and avoiding unnecessary work?"},
+      {ar:'هل استخدمتُ اسم الرب باحترام وتقوى؟',en:"Have I used the Lord's name respectfully and reverently?"},
+      {ar:'هل حرصتُ على الصلاة كل يوم، شاكراً الله على نِعَمِه، باحثاً عن إرادته، وفاتحاً قلبي له؟',en:'Have I made a decent effort to pray every day, thanking God for His blessings, seeking to know His will, and opening my heart to Him?'},
+      {ar:'هل سعيتُ إلى اكتشاف محبة الله وحضوره في جمال الطبيعة وظروف حياتي وأعماق روحي؟',en:"Have I made a decent effort to find God's love and presence in the beauties of nature, the circumstances of my life, and the depths of my soul?"},
+      {ar:'هل طلبتُ من الله كل يوم النعمة التي أحتاجها لأعيش حياتي كاملةً كما يريدها لي؟',en:'Have I asked God every day to give me the grace I need to live my life to the full, as He wants me to?'},
+    ]
+  },
+  {
+    icon:'🤝', ar:'في علاقتي بالآخرين', en:'In My Relationship with Others',
+    qs:[
+      {ar:'هل ابتعدتُ عن الكذب والنميمة والبهتان والافتراء؟',en:'Have I avoided lies, gossip, calumny, and slander?'},
+      {ar:'هل ابتعدتُ عن إصدار الأحكام على الآخرين وعن التفكير فيهم تفكيراً سيئاً متعمَّداً؟',en:'Have I avoided judging others and purposely thinking evil thoughts about them?'},
+      {ar:'هل تجنّبتُ إزعاج الآخرين أو إهانتهم أو الإضرار بهم، ولا سيما المقرّبين منّي؟',en:'Have I avoided doing things that bother, insult, or harm other people, especially those closest to me?'},
+      {ar:'هل ابتعدتُ عن إعطاء مثال سيّئ يُسبّب فضيحة أو عثرة للآخرين؟',en:'Have I avoided causing scandal through my bad example?'},
+      {ar:'هل ابتعدتُ عن السرقة؟',en:'Have I avoided stealing?'},
+      {ar:'هل أبديتُ احتراماً خاصاً لوالديّ وكبار السن ومَن لهم سلطة مشروعة عليّ؟',en:'Have I shown special respect towards my parents, my elders, and those in positions of legitimate authority over me?'},
+      {ar:'هل حرصتُ على مساعدة المحتاجين وتشجيع المثبَّطين وإبراز الخير في الآخرين؟',en:'Have I made a decent effort to help others in need, to encourage the downhearted, and to find and bring the best out of others?'},
+      {ar:'هل سامحتُ مَن أساء إليّ أو آذاني؟',en:'Have I forgiven those who have offended or hurt me?'},
+      {ar:'هل حرصتُ على العدل والإنصاف في علاقاتي وفي مجتمعي؟',en:'Have I made a decent effort to be fair and to promote fairness and justice in my relationships, in my community, and in society?'},
+      {ar:'هل كنتُ حاضراً حقّاً لمن هم أقرب إليّ — الزوج/الزوجة، أفراد العائلة، الأصدقاء — أدعمهم وأحترمهم؟',en:'Have I been especially attentive to help, support, and respect those people closest to me (spouse, family members, friends, colleagues)?'},
+      {ar:'هل عشتُ جنسانيتي بفرح ربّاني وكرامة، مبتعداً عن الحميمية الجنسية خارج الزواج وعن الكلام أو اللباس غير اللائق؟',en:'Have I lived my sexuality with Godly joy and dignity, avoiding sexual intimacy outside of marriage and avoiding immodesty in dress and language?'},
+      {ar:'هل تعاملتُ مع الجنس الآخر باحترام وكرامة تليق بأبناء الله؟',en:'Have I thought of and treated members of the opposite sex with the respect and dignity that all children of God deserve?'},
+      {ar:'هل دافعتُ بشجاعة عن إيماني الكاثوليكي وشاركتُه حين شعرتُ أنّ الله يطلب منّي ذلك؟',en:'Have I courageously defended and shared my Catholic faith when I felt God was asking me to?'},
+    ]
+  },
+  {
+    icon:'🪞', ar:'في تعاملي مع نفسي', en:'In How I Treat Myself',
+    qs:[
+      {ar:'هل حرصتُ على الوفاء بواجباتي ومسؤولياتي، متجنّباً الكسل والمماطلة؟',en:'Have I made a decent effort to be responsible in all my duties and obligations, avoiding laziness and procrastination?'},
+      {ar:'هل سعيتُ إلى أن يكون كل ما أفعله من محبة الله والآخرين، لا من دوافع أنانية؟',en:'Have I made a decent effort to do everything I do out of love for God and for others, and not just for self-centered motives?'},
+      {ar:'هل احترمتُ جسدي وروحي، آخذاً العناية المناسبة باحتياجاتي الجسدية والعاطفية والروحية؟',en:'Have I respected my own life and person, taking reasonable care of my physical, emotional, and spiritual needs?'},
+      {ar:'هل ابتعدتُ عن إساءة استخدام الكحول والمواد المسكِرة أو المخدِرة؟',en:'Have I avoided abusing alcohol and other intoxicating or mind-altering substances?'},
+      {ar:'هل واصلتُ تنمية مواهبي الطبيعية وسخّرتُها في خدمة الله والآخرين؟',en:'Have I made a decent effort to continue developing my natural talents and to put them at the service of God and others?'},
+      {ar:'هل انتبهتُ لأفكاري، أقبلتُ الصالح منها ورفضتُ الشرّير؟',en:'Have I paid attention to my thoughts, accepting good and useful ones, but resisting and rejecting evil ones?'},
+      {ar:'هل حاولتُ أن أتحكّم بمشاعري وخيالي بدل أن تتحكّم بي؟',en:'Have I made a decent effort to govern my feelings and my imagination, instead of being governed by them?'},
+      {ar:'هل أحسنتُ استخدام وقتي ومالي، متجنّباً اللامسؤولية والإسراف؟',en:'Have I made a good use of my time and my money, avoiding irresponsibility and waste?'},
+      {ar:'هل احترمتُ جنسانيتي كما أعطاني إياها الله، مبتعداً عن الإباحية والعادة السرية وقبول الأخيلة الشهوانية؟',en:'Have I respected my God-given sexuality, avoiding pornography, masturbation, and the acceptance of lustful fantasies?'},
+      {ar:'هل استخدمتُ وسائل الترفيه بحكمة ومسؤولية؟',en:'Have I used the entertainment media wisely and responsibly?'},
+      {ar:'هل حرصتُ على الاطّلاع على المسائل المهمة التي تؤثر في عائلتي ومجتمعي؟',en:'Have I made a decent effort to stay informed about important issues affecting my family, community, and society?'},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════
+// CONFESSION STEPS
+// ═══════════════════════════════════════════════════════
+const STEPS = [
+  {icon:'🚪',ar:{title:'ادخل بتواضع',desc:'ادخل غرفة الاعتراف بهدوء وتواضع. أشعر أنّك تقترب من رحمة الله لا من عقابه.'},en:{title:'Enter humbly',desc:"Enter the confessional calmly and humbly. Feel that you are approaching God's mercy, not His punishment."}},
+  {icon:'✝️',ar:{title:'ابدأ الاعتراف',desc:'أشِر بعلامة الصليب وقُل للكاهن: "باركني يا أبي لأنّي خطئتُ، وآخر اعترافي كان منذ ..."'},en:{title:'Begin the confession',desc:'Make the sign of the cross and say: "Bless me, Father, for I have sinned. My last confession was ... ago."'}},
+  {icon:'📋',ar:{title:'اذكر خطاياك',desc:"اذكر خطاياك بوضوح وببساطة، واحدة بعد الأخرى. ابدأ بالأثقل على قلبك. لا تخجل — الكاهن ملزم بالسرية التامة ولن يُخبر أحداً أبداً."},en:{title:'Confess your sins',desc:"Tell your sins clearly and simply, one by one. Start with what weighs most on your heart. Don't be ashamed — the priest is bound to absolute secrecy and will never tell anyone."}},
+  {icon:'👂',ar:{title:'استمع للكاهن',desc:'أنصت للكاهن باهتمام. قد يسألك أسئلة أو يعطيكَ توجيهاً ونصيحة — اقبل كلامه بتواضع وقلب مفتوح.'},en:{title:'Listen to the priest',desc:'Pay careful attention to the priest. He may ask questions or offer guidance and advice — receive his words with humility and an open heart.'}},
+  {icon:'🎁',ar:{title:'تقبّل الكفارة',desc:'تقبّل الكفارة التي يُعطيكَ إيّاها الكاهن بفرح وامتنان. غالباً بعض الصلوات. هي جزء من توبتك وشفائك.'},en:{title:'Accept your penance',desc:'Accept the penance the priest gives you with joy and gratitude. Usually some prayers. It is part of your repentance and healing.'}},
+  {icon:'❤️',ar:{title:'فعل الندامة',desc:'قل فعل الندامة بصدق ومن القلب. اشعر بكل كلمة وأنت تقولها.'},en:{title:'Act of Contrition',desc:'Say the Act of Contrition sincerely and from your heart. Feel every word as you say it.'}},
+  {icon:'✨',ar:{title:'الحلّ — المغفرة',desc:'الكاهن يمنحك مغفرة الله باسم المسيح. في تلك اللحظة، تُغسل كل خطاياك تماماً كأنّها لم تكن! هذه هي رحمة الله العظيمة.'},en:{title:'Absolution — Forgiveness',desc:"The priest grants you God's forgiveness in the name of Christ. In that moment, all your sins are completely washed away as if they never happened! This is God's great mercy."}},
+  {icon:'🌟',ar:{title:'اشكر الله',desc:'بعد الاعتراف، اجلس في الكنيسة وأدِّ نسكك. اشكر الله على رحمته العظيمة وابدأ من جديد بقلب نظيف.'},en:{title:'Give thanks to God',desc:'After confession, sit in the church and complete your penance. Thank God for His great mercy and begin again with a clean heart.'}},
+];
+
+const PRAYERS = {
+  ar:'يا إلهي أنا نادمٌ من كل قلبي على إهانتي إيّاك لكوني في الخطيئة.\nقد أهنتُ وأغضبتُ إلهاً هكذا عظيماً وصالحاً محبوباً نظيرك،\nلذا من الآن وصاعداً أنا قاصدٌ بمعونتك الإلهية\nألّا أُغيظك، لأنّي أحبّك فوق كل شيء.',
+  en:"My God, I am sorry from all my heart\nfor having offended You, because You are so good\nand sin displeases You.\nWith Your divine help, I firmly resolve\nnever to offend You again,\nfor I love You above all things."
+};
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let LANG = 'ar';
+let ROLE = null; // 'student' or 'godfather'
+let CATS = [];
+const TICKED = new Set();
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function $(id){ return document.getElementById(id); }
+
+function SL(lang){
+  LANG = lang;
+  $('app').lang = lang;
+  $('app').dir = lang === 'ar' ? 'rtl' : 'ltr';
+  // Role picker lang buttons
+  ['rl-btn-ar','btn-ar','sbtn-ar'].forEach(id=>{ const e=$(id); if(e) e.classList.toggle('act', lang==='ar'); });
+  ['rl-btn-en','btn-en','sbtn-en'].forEach(id=>{ const e=$(id); if(e) e.classList.toggle('act', lang==='en'); });
+  // Role picker texts
+  const t = T[lang];
+  $('rl-title').textContent    = t.rl_title;
+  $('rl-subtitle').textContent = t.rl_subtitle;
+  $('rc-s-en').textContent = t.rc_s_en;
+  $('rc-s-desc').textContent = t.rc_s_desc;
+  $('rc-g-en').textContent = t.rc_g_en;
+  $('rc-g-desc').textContent = t.rc_g_desc;
+  // Exam static strings (if exam is showing)
+  if(ROLE){
+    const isGod = ROLE === 'godfather';
+    $('t-title').textContent    = isGod ? t.title_god    : t.title_student;
+    $('t-subtitle').textContent = isGod ? t.subtitle_god : t.subtitle_student;
+    $('role-badge-btn').textContent = isGod ? t.badge_god : t.badge_student;
+    $('t-howTitle').textContent = t.howTitle;
+    $('t-how1').textContent     = t.how1;
+    $('t-how2').textContent     = t.how2;
+    $('t-how3').textContent     = t.how3;
+    $('t-how4').textContent     = t.how4;
+    $('btn-viewSum').textContent  = t.viewBtn;
+    $('btn-reset').textContent    = t.resetBtn;
+    $('t-footer').textContent     = t.footer;
+    $('t-sumTitle').textContent   = t.sumTitle;
+    $('t-sumSubtitle').textContent= t.sumSubtitle;
+    $('btn-backExam').textContent = t.backBtn;
+    $('btn-print').textContent    = t.printBtn;
+    $('t-stepsTitle').textContent = t.stepsTitle;
+    $('t-prayTitle').textContent  = t.prayTitle;
+    $('t-prayNote').textContent   = t.prayNote;
+    $('t-footer2').textContent    = t.footer;
+    // Update question texts already in DOM
+    document.querySelectorAll('.q-text').forEach(el=>{
+      el.textContent = el.getAttribute('data-'+lang) || el.textContent;
+    });
+    // Update section titles
+    document.querySelectorAll('.sec-title span[data-ci]').forEach(el=>{
+      const ci = parseInt(el.getAttribute('data-ci'));
+      el.textContent = CATS[ci][lang];
+    });
+    RS();
+    $('prayer-text').style.whiteSpace = 'pre-line';
+    $('prayer-text').textContent = PRAYERS[lang];
+    UC();
+  }
+}
+
+function SET_ROLE(role){
+  ROLE = role;
+  CATS = role === 'godfather' ? CATS_GOD : CATS_STUDENT;
+  TICKED.clear();
+  RC();
+  SL(LANG);
+  $('scr-role').style.display = 'none';
+  $('scr-exam').style.display = 'block';
+  $('scr-sum').style.display  = 'none';
+  window.scrollTo(0,0);
+}
+
+function GO_ROLE(){
+  $('scr-exam').style.display = 'none';
+  $('scr-sum').style.display  = 'none';
+  $('scr-role').style.display = 'flex';
+  $('scr-role').style.flexDirection = 'column';
+  window.scrollTo(0,0);
+}
+
+function RC(){
+  const c = $('cats-container');
+  c.innerHTML = CATS.map((cat,ci)=>`
+    <div class="section">
+      <div class="sec-title">${cat.icon} <span data-ci="${ci}">${cat[LANG]}</span></div>
+      <div class="questions">
+        ${cat.qs.map((q,qi)=>`
+          <div class="q-item${TICKED.has(ci+'-'+qi)?' done':''}" data-ci="${ci}" data-qi="${qi}">
+            <div class="q-check">${TICKED.has(ci+'-'+qi)?'✓':''}</div>
+            <div class="q-text" data-ar="${q.ar.replace(/"/g,'&quot;')}" data-en="${q.en.replace(/"/g,'&quot;')}">${q[LANG]}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function TQ(ci,qi,el){
+  const key = ci+'-'+qi;
+  if(TICKED.has(key)){ TICKED.delete(key); el.classList.remove('done'); el.querySelector('.q-check').textContent=''; }
+  else { TICKED.add(key); el.classList.add('done'); el.querySelector('.q-check').textContent='✓'; }
+  UC();
+}
+
+function UC(){
+  const total = CATS.reduce((s,c)=>s+c.qs.length, 0);
+  const done  = TICKED.size;
+  const c = $('counter');
+  if(done===0) c.textContent = LANG==='ar'?'لم تختر أيّ شيء بعد — تصفّح الأسئلة بصدق 👇':"You haven't selected anything yet — browse the questions honestly 👇";
+  else if(done===total) c.textContent = LANG==='ar'?'✓ انتهيتَ من الفحص — اضغط لعرض قائمتك 🙏':'✓ Done! Press the button to view your list 🙏';
+  else c.textContent = LANG==='ar'?`✓ اخترتَ ${done} من ${total} — تابع القراءة 👇`:`✓ Selected ${done} of ${total} — keep reading 👇`;
+}
+
+function RS(){
+  const c = $('steps-container');
+  c.innerHTML = STEPS.map((s,i)=>`
+    <div class="step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-body">
+        <div class="step-title">${s.icon} ${s[LANG].title}</div>
+        <div class="step-desc">${s[LANG].desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function ShowSum(){
+  const t = T[LANG];
+  const n = TICKED.size;
+  const meta = $('sum-meta');
+  if(n===0) meta.textContent = LANG==='ar'?'لم تختر أيّ خطيئة بعد':'No sins selected yet';
+  else if(n===1) meta.textContent = t.metaSingle;
+  else meta.textContent = t.metaMany(n);
+  const sumDiv = $('summary-sins');
+  if(n===0){
+    sumDiv.innerHTML = `<div class="sum-empty">${t.noSins}</div>`;
+  } else {
+    let html = '';
+    CATS.forEach((cat,ci)=>{
+      const tq = cat.qs.filter((_,qi)=>TICKED.has(ci+'-'+qi));
+      if(!tq.length) return;
+      html += `<div class="sum-cat">
+        <div class="sum-cat-title">${cat.icon} ${cat[LANG]}</div>
+        ${tq.map(q=>`<div class="sum-item">${q[LANG]}</div>`).join('')}
+      </div>`;
+    });
+    sumDiv.innerHTML = html;
+  }
+  RS();
+  $('prayer-text').style.whiteSpace = 'pre-line';
+  $('prayer-text').textContent = PRAYERS[LANG];
+  $('scr-exam').style.display = 'none';
+  $('scr-sum').style.display  = 'block';
+  window.scrollTo(0,0);
+}
+
+function ShowExam(){
+  $('scr-sum').style.display  = 'none';
+  $('scr-exam').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+function ResetAll(){
+  TICKED.clear();
+  document.querySelectorAll('.q-item').forEach(el=>{
+    el.classList.remove('done');
+    el.querySelector('.q-check').textContent = '';
+  });
+  UC();
+}
+
+// ═══════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function(){
+  // Role picker lang buttons
+  $('rl-btn-ar').addEventListener('click', ()=>SL('ar'));
+  $('rl-btn-en').addEventListener('click', ()=>SL('en'));
+  // Role cards
+  $('card-student').addEventListener('click',   ()=>SET_ROLE('student'));
+  $('card-godfather').addEventListener('click',  ()=>SET_ROLE('godfather'));
+  // Role badge (change role)
+  $('role-badge-btn').addEventListener('click', GO_ROLE);
+  // Lang buttons in exam
+  $('btn-ar').addEventListener('click', ()=>SL('ar'));
+  $('btn-en').addEventListener('click', ()=>SL('en'));
+  // Lang buttons in summary
+  $('sbtn-ar').addEventListener('click', ()=>SL('ar'));
+  $('sbtn-en').addEventListener('click', ()=>SL('en'));
+  // Exam actions
+  $('btn-viewSum').addEventListener('click', ShowSum);
+  $('btn-reset').addEventListener('click',   ResetAll);
+  // Summary actions
+  $('btn-backExam').addEventListener('click', ShowExam);
+  $('btn-print').addEventListener('click',    ()=>window.print());
+  // Delegated question tap
+  document.getElementById('cats-container').addEventListener('click', function(e){
+    const item = e.target.closest('.q-item');
+    if(item) TQ(parseInt(item.dataset.ci), parseInt(item.dataset.qi), item);
+  });
+  // Init lang display
+  SL('ar');
+});
+</script>
+</body>
+</html>
